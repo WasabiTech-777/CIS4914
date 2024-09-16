@@ -13,7 +13,7 @@ export default function LoginScreen() {
   };
 
   const handleSignup = () => {
-    router.push('/signup'); // Navigate to the signup page
+    router.push('./signup'); // Navigate to the signup page
   };
 
   return (

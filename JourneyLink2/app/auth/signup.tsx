@@ -56,6 +56,9 @@ export default function SignupScreen() {
 
     // You can now proceed with the signup logic (e.g., send data to backend)
   };
+  const handleLogin = () => {
+    router.push('./login'); // Navigate to the signup page
+  };
 
   return (
     <View style={styles.container}>
@@ -113,7 +116,7 @@ export default function SignupScreen() {
         <Text style={styles.signupButtonText}>Sign Up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginButton} onPress={() => router.push('/login')}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>Already have an account? Log In</Text>
       </TouchableOpacity>
     </View>
