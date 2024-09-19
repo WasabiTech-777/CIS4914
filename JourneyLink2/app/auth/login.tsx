@@ -1,19 +1,40 @@
-import { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { signInWithEmailAndPassword } from 'firebase/auth';  // Import Firebase auth functions
+import { auth } from '../firebase/firebaseConfig';  // Import Firebase auth instance
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [value, setValue] = React.useState({
+    email: "",
+    password: "",
+    error: "",
+  });
   const router = useRouter();
 
-  const handleLogin = () => {
-    // Logic for login can be added here
-    console.log('Login clicked with email:', email);
-  };
+  // Handle login using Firebase Authentication
+  async function handleLogin() {
+    if (value.email === "" || value.password === "") {
+      setValue({
+        ...value,
+        error: "Email and password are mandatory.",
+      });
+      Alert.alert("Error", "Email and password are mandatory.");
+      return;
+    }
+
+    try {
+      await signInWithEmailAndPassword(auth, value.email, value.password);
+      // If login is successful, navigate to the /(tabs) route
+      router.push('/(tabs)');
+    } catch (error) {
+      // Handle login error (e.g., incorrect email or password)
+      Alert.alert("Login Error", "Email or password not recognized. Please try again.");
+    }
+  }
 
   const handleSignup = () => {
-    router.push('./signup'); // Navigate to the signup page
+    router.push('/auth/signup'); // Navigate to the signup page
   };
 
   return (
@@ -23,8 +44,8 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="University Email"
-        value={email}
-        onChangeText={setEmail}
+        value={value.email}
+        onChangeText={(text) => setValue({ ...value, email: text })}
         keyboardType="email-address"
         autoCapitalize="none"
       />
@@ -32,8 +53,8 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
+        value={value.password}
+        onChangeText={(text) => setValue({ ...value, password: text })}
         secureTextEntry
         autoCapitalize="none"
       />
@@ -71,7 +92,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderColor: '#ccc',
     borderWidth: 1,
-    borderRadius: 5,  // Rounded edges for input
+    borderRadius: 5,
     marginBottom: 10,
     paddingHorizontal: 10,
   },
@@ -79,7 +100,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#3498db',
     paddingVertical: 12,
     paddingHorizontal: 25,
-    borderRadius: 25,  // Rounded edges for the button
+    borderRadius: 25,
     alignItems: 'center',
     width: '100%',
     marginTop: 10,
@@ -90,18 +111,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   signupButton: {
-    backgroundColor: '#fff',  // White background for the sign-up button
+    backgroundColor: '#fff',
     paddingVertical: 12,
     paddingHorizontal: 25,
-    borderRadius: 25,  // Rounded edges for the button
+    borderRadius: 25,
     alignItems: 'center',
     width: '100%',
     marginTop: 10,
-    borderColor: '#3498db',  // Blue border
+    borderColor: '#3498db',
     borderWidth: 2,
   },
   signupButtonText: {
-    color: '#3498db',  // Blue text for the sign-up button
+    color: '#3498db',
     fontSize: 18,
     fontWeight: 'bold',
   },

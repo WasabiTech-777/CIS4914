@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword } from 'firebase/auth';  // Import Firebase auth functions
+import { auth } from '../firebase/firebaseConfig'; 
 
 export default function SignupScreen() {
   const [firstName, setFirstName] = useState('');
@@ -9,6 +11,7 @@ export default function SignupScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [referenceCode, setReferenceCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const router = useRouter();
 
   // Function to validate the password
@@ -28,7 +31,7 @@ export default function SignupScreen() {
     );
   };
 
-  const handleSignup = () => {
+  async function handleSignup(){
     // Check if the passwords match
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match.");
@@ -55,6 +58,15 @@ export default function SignupScreen() {
     });
 
     // You can now proceed with the signup logic (e.g., send data to backend)
+    try {
+      // Proceed with Firebase signup
+      await createUserWithEmailAndPassword(auth, email, password);
+      // If signup is successful, navigate to the /(tabs) route
+      router.push('/(tabs)');
+    } catch (error) {
+      // Handle signup error (e.g., email already in use)
+      Alert.alert("Signup Error", "Email is already in use. Please try again.");
+    }
   };
   const handleLogin = () => {
     router.push('./login'); // Navigate to the signup page
@@ -77,7 +89,14 @@ export default function SignupScreen() {
         value={lastName}
         onChangeText={setLastName}
       />
-
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+        autoCapitalize="none"
+      />
       <TextInput
         style={styles.input}
         placeholder="University Email"
