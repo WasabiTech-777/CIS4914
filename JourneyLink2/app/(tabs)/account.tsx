@@ -1,6 +1,9 @@
-import React from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, FlatList } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, ScrollView, Image, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../firebase/firebaseConfig';
+
 
 const drives = [
   { id: '1', date: '2023-09-10', location: 'City A to City B', duration: '2 hrs' },
@@ -18,6 +21,35 @@ const reviews = [
 ];
 
 const AccountScreen = () => {
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState<string | null>(null);
+  const [firestoreUsers, setFirestoreUsers] = useState<any[]>([]);
+
+  useEffect(() => {
+    const testFirestoreConnection = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'users')); // Replace 'users' with your Firestore collection name
+        if (!querySnapshot.empty) {
+          const usersData = querySnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+          setFirestoreUsers(usersData);
+          setMessage(`Connected to Firestore! Found ${querySnapshot.size} users.`);
+        } else {
+          setMessage('Connected to Firestore but no users found.');
+        }
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setMessage('Failed to connect to Firestore.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    testFirestoreConnection();
+  }, []);
+
   const renderCard = ({ item }: any) => (
     <View style={styles.card}>
       <Text style={styles.cardText}>{item.date}</Text>
@@ -53,6 +85,27 @@ const AccountScreen = () => {
           ))}
         </View>
       </View>
+
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#0000ff" />
+          <Text>Checking Firestore connection...</Text>
+        </View>
+      ) : (
+        <Text>{message}</Text>
+      )}
+
+      {/* Display Firestore Users if Connected */}
+      {firestoreUsers.length > 0 && (
+        <View>
+          <Text style={styles.sectionTitle}>Firestore Users</Text>
+          {firestoreUsers.map((user) => (
+            <View key={user.id} style={styles.card}>
+              <Text style={styles.cardText}>User: {user.name}</Text>
+            </View>
+          ))}
+        </View>
+      )}
 
       {/* Drive History */}
       <Text style={styles.sectionTitle}>Drive History</Text>
@@ -132,6 +185,11 @@ const styles = StyleSheet.create({
   cardText: {
     fontSize: 14,
     marginBottom: 5,
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginVertical: 10,
   },
 });
 
