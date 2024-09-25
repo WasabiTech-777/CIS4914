@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { createUserWithEmailAndPassword } from 'firebase/auth';  // Import Firebase auth functions
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';  // Import Firebase auth functions
 import { auth } from '../firebase/firebaseConfig'; 
 
 export default function SignupScreen() {
@@ -60,9 +60,13 @@ export default function SignupScreen() {
     // You can now proceed with the signup logic (e.g., send data to backend)
     try {
       // Proceed with Firebase signup
-      await createUserWithEmailAndPassword(auth, email, password);
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      if (user){
+        await sendEmailVerification(user);
+        router.push('./verify');
+      }
       // If signup is successful, navigate to the /(tabs) route
-      router.push('/(tabs)');
     } catch (error) {
       // Handle signup error (e.g., email already in use)
       Alert.alert("Signup Error", "Email is already in use. Please try again.");
