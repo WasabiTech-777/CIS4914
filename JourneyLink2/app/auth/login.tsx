@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { signInWithEmailAndPassword } from 'firebase/auth';  // Import Firebase auth functions
-import { auth } from '../firebase/firebaseConfig';  // Import Firebase auth instance
+import { auth } from '../../firebase/firebaseConfig';  // Import Firebase auth instance
 
 export default function LoginScreen() {
   const [value, setValue] = React.useState({

@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';  // Import Firebase auth functions
-import { auth } from '../firebase/firebaseConfig'; 
+import { auth } from '../../firebase/firebaseConfig'; 
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebaseConfig';
 
 export default function SignupScreen() {
   const [firstName, setFirstName] = useState('');
@@ -63,11 +65,22 @@ export default function SignupScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       if (user){
+        await addDoc(collection(db, 'users'), {
+          uid: user.uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          referenceCode: referenceCode ||null,
+          phoneNumber: phoneNumber,
+          createdAt: new Date(),
+          driverCheck: false,
+        });
         await sendEmailVerification(user);
         router.push('./verify');
       }
       // If signup is successful, navigate to the /(tabs) route
     } catch (error) {
+      console.error("Signup Error: ", error);
       // Handle signup error (e.g., email already in use)
       Alert.alert("Signup Error", "Email is already in use. Please try again.");
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Alert, StyleSheet } from 'react-native';
-import { auth } from '../firebase/firebaseConfig'; // Importing auth from your firebase.ts
+import { auth } from '../../firebase/firebaseConfig'; // Importing auth from your firebase.ts
 import { useRouter } from 'expo-router';
 
 export default function VerifyScreen(){
@@ -40,7 +40,7 @@ export default function VerifyScreen(){
         Please verify your email using the link sent to your inbox.
       </Text>
       <Text style={styles.statusText}>
-        Waiting for email verification...
+        Waiting for email verification page will automatically redirect...
       </Text>
     </View>
   );
@@ -54,10 +54,10 @@ const styles = StyleSheet.create({
       padding: 20,
     },
     headingText: {
-      fontSize: 18,
-      color: '#0000FF', // Blue font color
+      fontSize: 24,
       marginBottom: 20,
-      textAlign: 'center',
+      color: 'orange',
+      fontWeight: 'bold',
     },
     statusText: {
       fontSize: 16,
