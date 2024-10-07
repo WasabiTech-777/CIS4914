@@ -1,84 +1,105 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { collection, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore'; // Query Firestore for user's data
 import { db } from '../../firebase/firebaseConfig';
+import { useAuth } from '../../hooks/useAuth'; // Import the useAuth hook
 
-
-const drives = [
-  { id: '1', date: '2023-09-10', location: 'City A to City B', duration: '2 hrs' },
-  { id: '2', date: '2023-08-21', location: 'City C to City D', duration: '1.5 hrs' },
+// Static placeholder data
+const placeholderDrives = [
+  { id: '1', date: '2023-09-10', location: 'New York to Boston', duration: '4 hrs' },
+  { id: '2', date: '2023-08-21', location: 'Los Angeles to San Francisco', duration: '6 hrs' },
 ];
 
-const rides = [
-  { id: '1', date: '2023-09-08', location: 'City E to City F', duration: '3 hrs' },
-  { id: '2', date: '2023-08-19', location: 'City G to City H', duration: '2 hrs' },
+const placeholderRides = [
+  { id: '1', date: '2023-09-08', location: 'Chicago to Detroit', duration: '5 hrs' },
+  { id: '2', date: '2023-08-19', location: 'Miami to Orlando', duration: '4 hrs' },
 ];
 
-const reviews = [
-  { id: '1', user: 'John Doe', comment: 'Great driver!', rating: 5 },
-  { id: '2', user: 'Jane Smith', comment: 'Smooth ride, very punctual.', rating: 4 },
+const placeholderReviews = [
+  { id: '1', user: 'Alex Johnson', comment: 'Amazing ride, very comfortable!', rating: 5 },
+  { id: '2', user: 'Sara Williams', comment: 'Smooth driving and arrived on time.', rating: 4 },
 ];
 
 const AccountScreen = () => {
+  const { user } = useAuth(); // Use the useAuth hook to get the authenticated user
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
-  const [firestoreUsers, setFirestoreUsers] = useState<any[]>([]);
+  const [firestoreUserData, setFirestoreUserData] = useState<any>(null);
 
   useEffect(() => {
-    const testFirestoreConnection = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'users')); // Replace 'users' with your Firestore collection name
-        if (!querySnapshot.empty) {
-          const usersData = querySnapshot.docs.map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-          setFirestoreUsers(usersData);
-          setMessage(`Connected to Firestore! Found ${querySnapshot.size} users.`);
-        } else {
-          setMessage('Connected to Firestore but no users found.');
+    const fetchUserData = async () => {
+      if (user) {
+        console.log('User object:', user); // Log the entire user object
+        console.log('User UID:', user.uid); // Log the user's UID
+
+        try {
+          // Query Firestore to find a document where 'uid' matches the logged-in user's UID
+          const q = query(collection(db, 'users'), where('uid', '==', user.uid));
+          const querySnapshot = await getDocs(q);
+
+          if (!querySnapshot.empty) {
+            querySnapshot.forEach((doc) => {
+              const userData = doc.data();
+              console.log('Firestore user data:', userData); // Log the fetched user data
+              setFirestoreUserData(userData);
+
+              // Log profile image or fallback
+              if (userData.profileImage) {
+                console.log('Profile image URL:', userData.profileImage);
+              } else {
+                console.log('No profile image found, using fallback image.');
+              }
+
+              setMessage('User data loaded successfully!');
+            });
+          } else {
+            setMessage('No user data found.');
+            console.log('No user data found for UID:', user.uid);
+          }
+        } catch (error) {
+          console.error('Error fetching user data:', error);
+          setMessage('Failed to load user data.');
+        } finally {
+          setLoading(false);
         }
-      } catch (error) {
-        console.error('Error fetching users:', error);
-        setMessage('Failed to connect to Firestore.');
-      } finally {
+      } else {
+        setMessage('User not signed in.');
+        console.log('No user is signed in.');
         setLoading(false);
       }
     };
 
-    testFirestoreConnection();
-  }, []);
+    fetchUserData();
+  }, [user]); // Depend on `user` to fetch data only when the user is logged in
 
-  const renderCard = ({ item }: any) => (
-    <View style={styles.card}>
-      <Text style={styles.cardText}>{item.date}</Text>
-      <Text style={styles.cardText}>{item.location}</Text>
-      <Text style={styles.cardText}>Duration: {item.duration}</Text>
-    </View>
-  );
-
-  const renderReviewCard = ({ item }: any) => (
-    <View style={styles.card}>
-      <Text style={styles.cardText}>{item.user}</Text>
-      <Text style={styles.cardText}>{item.comment}</Text>
-      <View style={styles.starContainer}>
-        {[...Array(item.rating)].map((_, i) => (
-          <FontAwesome key={i} name="star" size={16} color="gold" />
-        ))}
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+        <Text>Loading...</Text>
       </View>
-    </View>
-  );
+    );
+  }
 
   return (
     <ScrollView style={styles.container}>
       {/* Profile Section */}
       <View style={styles.profileSection}>
         <Image
-          source={{ uri: 'https://your-profile-image-url.com' }}
+          source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }} // Use user's profile image if available
           style={styles.profilePicture}
         />
-        <Text style={styles.name}>John Doe</Text>
+        <Text style={styles.name}>{firestoreUserData?.name || 'Guest'}</Text> {/* Display user’s name or fallback */}
+        
+        {/* Display email and phone number if they exist */}
+        {firestoreUserData?.email && (
+          <Text style={styles.detailsText}>Email: {firestoreUserData.email}</Text>
+        )}
+        {firestoreUserData?.phoneNumber && (
+          <Text style={styles.detailsText}>Phone: {firestoreUserData.phoneNumber}</Text>
+        )}
+
         <View style={styles.starContainer}>
           {[...Array(5)].map((_, i) => (
             <FontAwesome key={i} name="star" size={24} color="gold" />
@@ -86,32 +107,19 @@ const AccountScreen = () => {
         </View>
       </View>
 
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#0000ff" />
-          <Text>Checking Firestore connection...</Text>
-        </View>
-      ) : (
-        <Text>{message}</Text>
-      )}
-
-      {/* Display Firestore Users if Connected */}
-      {firestoreUsers.length > 0 && (
-        <View>
-          <Text style={styles.sectionTitle}>Firestore Users</Text>
-          {firestoreUsers.map((user) => (
-            <View key={user.id} style={styles.card}>
-              <Text style={styles.cardText}>User: {user.name}</Text>
-            </View>
-          ))}
-        </View>
-      )}
+      <Text>{message}</Text>
 
       {/* Drive History */}
       <Text style={styles.sectionTitle}>Drive History</Text>
       <FlatList
-        data={drives}
-        renderItem={renderCard}
+        data={placeholderDrives}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.cardText}>{item.date}</Text>
+            <Text style={styles.cardText}>{item.location}</Text>
+            <Text style={styles.cardText}>Duration: {item.duration}</Text>
+          </View>
+        )}
         keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -121,8 +129,14 @@ const AccountScreen = () => {
       {/* Ride History */}
       <Text style={styles.sectionTitle}>Ride History</Text>
       <FlatList
-        data={rides}
-        renderItem={renderCard}
+        data={placeholderRides}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.cardText}>{item.date}</Text>
+            <Text style={styles.cardText}>{item.location}</Text>
+            <Text style={styles.cardText}>Duration: {item.duration}</Text>
+          </View>
+        )}
         keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -132,8 +146,18 @@ const AccountScreen = () => {
       {/* Reviews */}
       <Text style={styles.sectionTitle}>Reviews</Text>
       <FlatList
-        data={reviews}
-        renderItem={renderReviewCard}
+        data={placeholderReviews}
+        renderItem={({ item }) => (
+          <View style={styles.card}>
+            <Text style={styles.cardText}>{item.user}</Text>
+            <Text style={styles.cardText}>{item.comment}</Text>
+            <View style={styles.starContainer}>
+              {[...Array(item.rating)].map((_, i) => (
+                <FontAwesome key={i} name="star" size={16} color="gold" />
+              ))}
+            </View>
+          </View>
+        )}
         keyExtractor={item => item.id}
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -161,6 +185,11 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 22,
     fontWeight: 'bold',
+  },
+  detailsText: {
+    fontSize: 16,
+    color: '#777',
+    marginTop: 5,
   },
   starContainer: {
     flexDirection: 'row',
