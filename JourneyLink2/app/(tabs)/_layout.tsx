@@ -1,24 +1,12 @@
 import { Tabs } from 'expo-router';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import { TabBarIcon } from '@/components/navigation/TabBarIcon';
 import { Colors } from '@/constants/Colors';
-// Remove useColorScheme if we want to force dark mode.
-// import { useColorScheme } from '@/hooks/useColorScheme';
-import { getDriverStatus } from '@/services/driverService'; // Import the driver service
+
 export default function TabLayout() {
   // Force dark mode
   const colorScheme = 'dark';  // Set to 'dark' explicitly
-  const [isDriverEligible, setIsDriverEligible] = useState(false);
 
-  useEffect(() => {
-    // Check if user has completed driver information
-    async function checkDriverEligibility() {
-      const eligible = await getDriverStatus();  // Fetch driver eligibility from Firestore
-      setIsDriverEligible(eligible);
-    }
-
-    checkDriverEligibility();
-  }, []);
   return (
     <Tabs
       screenOptions={{
@@ -39,7 +27,7 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name={isDriverEligible ? 'driver' : 'driverForm'} 
+        name="driver" // Register only the driver screen, no driverform
         options={{
           title: 'Driver',
           tabBarIcon: ({ color, focused }) => (
@@ -50,7 +38,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="rider"
         options={{
-          title:'Rides',
+          title: 'Rides',
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'flash' : 'flash-outline'} color={color} />
           ),
@@ -59,7 +47,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="account"
         options={{
-          title:'Account',  
+          title: 'Account',  
           tabBarIcon: ({ color, focused }) => (
             <TabBarIcon name={focused ? 'person' : 'person-outline'} color={color} />
           ),
