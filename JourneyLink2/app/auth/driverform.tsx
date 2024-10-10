@@ -80,7 +80,7 @@ export default function DriverForm() {
         { merge: true } // Merge with existing fields
       );
   
-      router.replace('/driver/driver');
+      router.replace('/(tabs)/driver');
   
       console.log('Driver data successfully submitted!');
     } catch (error) {
@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
-  },
+  }, 
   image: {
     width: 100,
     height: 100,
