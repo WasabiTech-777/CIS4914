@@ -90,8 +90,12 @@ const AccountScreen = () => {
           source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }} // Use user's profile image if available
           style={styles.profilePicture}
         />
-        <Text style={styles.name}>{firestoreUserData?.name || 'Guest'}</Text> {/* Display user’s name or fallback */}
-        
+        <Text style={styles.name}>
+          {firestoreUserData?.firstName && firestoreUserData?.lastName 
+            ? `${firestoreUserData.firstName} ${firestoreUserData.lastName}` 
+            : 'Guest'}
+        </Text> {/* Display user's first and last name or fallback */}
+  
         {/* Display email and phone number if they exist */}
         {firestoreUserData?.email && (
           <Text style={styles.detailsText}>Email: {firestoreUserData.email}</Text>
@@ -99,7 +103,7 @@ const AccountScreen = () => {
         {firestoreUserData?.phoneNumber && (
           <Text style={styles.detailsText}>Phone: {firestoreUserData.phoneNumber}</Text>
         )}
-
+  
         <View style={styles.starContainer}>
           {[...Array(5)].map((_, i) => (
             <FontAwesome key={i} name="star" size={24} color="gold" />
