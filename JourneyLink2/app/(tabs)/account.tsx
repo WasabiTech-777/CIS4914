@@ -86,32 +86,31 @@ const AccountScreen = () => {
     <ScrollView style={styles.container}>
       {/* Profile Section */}
       <View style={styles.profileSection}>
-        <Image
-          source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }} // Use user's profile image if available
-          style={styles.profilePicture}
-        />
-        <Text style={styles.name}>
-          {firestoreUserData?.firstName && firestoreUserData?.lastName 
-            ? `${firestoreUserData.firstName} ${firestoreUserData.lastName}` 
-            : 'Guest'}
-        </Text> {/* Display user's first and last name or fallback */}
+    <Image
+      source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }} // Use user's profile image if available
+      style={styles.profilePicture}
+    />
+    <Text style={styles.name}>
+      {firestoreUserData?.firstName && firestoreUserData?.lastName 
+        ? `${firestoreUserData.firstName} ${firestoreUserData.lastName}` 
+        : 'Guest'}
+    </Text>
   
-        {/* Display email and phone number if they exist */}
-        {firestoreUserData?.email && (
-          <Text style={styles.detailsText}>Email: {firestoreUserData.email}</Text>
-        )}
-        {firestoreUserData?.phoneNumber && (
-          <Text style={styles.detailsText}>Phone: {firestoreUserData.phoneNumber}</Text>
-        )}
+    {firestoreUserData?.email && (
+      <Text style={styles.detailsText}>Email: {String(firestoreUserData.email)}</Text> // Ensure email is a string
+    )}
+    {firestoreUserData?.phoneNumber && (
+      <Text style={styles.detailsText}>Phone: {String(firestoreUserData.phoneNumber)}</Text> // Ensure phoneNumber is a string
+    )}
   
-        <View style={styles.starContainer}>
-          {[...Array(5)].map((_, i) => (
-            <FontAwesome key={i} name="star" size={24} color="gold" />
-          ))}
-        </View>
-      </View>
+    <View style={styles.starContainer}>
+      {[...Array(5)].map((_, i) => (
+        <FontAwesome key={i} name="star" size={24} color="gold" />
+      ))}
+    </View>
+  </View>
 
-      <Text>{message}</Text>
+      <Text>{String(message)}</Text>
 
       {/* Drive History */}
       <Text style={styles.sectionTitle}>Drive History</Text>
