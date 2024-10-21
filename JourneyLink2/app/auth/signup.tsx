@@ -1,140 +1,164 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, Button, Image, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
-import { storage, db } from '../../firebase/firebaseConfig'; // Import Firebase storage and db
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc, Timestamp } from 'firebase/firestore';
+import { useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { useRouter } from 'expo-router';
+import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';  // Import Firebase auth functions
+import { auth } from '../../firebase/firebaseConfig'; 
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../../firebase/firebaseConfig';
 
-// Your Driver Form component
-export default function DriverForm() {
-  const [make, setMake] = useState('');
-  const [model, setModel] = useState('');
-  const [year, setYear] = useState('');
-  const [seats, setSeats] = useState('');
-  const [registrationImage, setRegistrationImage] = useState<string | null>(null);
-  const [insuranceImage, setInsuranceImage] = useState<string | null>(null);
-  const [licenseImage, setLicenseImage] = useState<string | null>(null);
-    
-  const pickImage = async (setter: React.Dispatch<React.SetStateAction<string | null>>) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      quality: 1,
+export default function SignupScreen() {
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [referenceCode, setReferenceCode] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const router = useRouter();
+
+  // Function to validate the password
+  const validatePassword = (password: string) => {
+    const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+    const lowerCaseRegex = /[a-z]/;
+    const upperCaseRegex = /[A-Z]/;
+    const numberRegex = /[0-9]/;
+    const minLength = password.length >= 8;
+
+    return (
+      specialCharRegex.test(password) &&
+      lowerCaseRegex.test(password) &&
+      upperCaseRegex.test(password) &&
+      numberRegex.test(password) &&
+      minLength
+    );
+  };
+
+  async function handleSignup(){
+    // Check if the passwords match
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match.");
+      return;
+    }
+
+    // Check if the password meets the criteria
+    if (!validatePassword(password)) {
+      Alert.alert(
+        "Invalid Password",
+        "Password must be at least 8 characters long and include a special character, a lowercase letter, an uppercase letter, and a number."
+      );
+      return;
+    }
+
+    // Proceed with signup logic if everything is valid
+    console.log({
+      firstName,
+      lastName,
+      email,
+      password,
+      confirmPassword,
+      referenceCode,
     });
 
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      setter(result.assets[0].uri); // Set the selected image URI
-    }
-  };
-
-  // Helper function to upload images to Firebase Storage
-  const uploadImageToStorage = async (uri: string, path: string) => {
-    const response = await fetch(uri);
-    const blob = await response.blob();
-
-    const storageRef = ref(storage, path); // Use Firebase storage reference
-    await uploadBytes(storageRef, blob);
-    return getDownloadURL(storageRef); // Return the download URL after uploading
-  };
-
-  // Submit the form data
-  const handleSubmit = async () => {
+    // You can now proceed with the signup logic (e.g., send data to backend)
     try {
-      // Upload images to Firebase Storage and get URLs
-      const registrationImageUrl = registrationImage
-        ? await uploadImageToStorage(registrationImage, `drivers/registration_${Date.now()}.jpg`)
-        : null;
-
-      const insuranceImageUrl = insuranceImage
-        ? await uploadImageToStorage(insuranceImage, `drivers/insurance_${Date.now()}.jpg`)
-        : null;
-
-      const licenseImageUrl = licenseImage
-        ? await uploadImageToStorage(licenseImage, `drivers/license_${Date.now()}.jpg`)
-        : null;
-
-      // Firestore document ID (driverId)
-      const driverId = 12345;
-
-      // Save driver data to Firestore
-      await setDoc(doc(db, 'drivers', driverId.toString()), {
-        createdAt: Timestamp.fromDate(new Date('2024-09-05T11:57:06-04:00')),
-        driverId,
-        insuranceImage: insuranceImageUrl || '',
-        licenseImage: licenseImageUrl || '',
-        licenseNumber: 'abc',
-        rating: 5,
-        registrationImage: registrationImageUrl || '',
-        totalTrips: 1,
-        vehicle: `${make} ${model} ${year}`,
-      });
-
-      console.log('Driver data successfully submitted!');
+      // Proceed with Firebase signup
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      if (user){
+        await addDoc(collection(db, 'users'), {
+          uid: user.uid,
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          referenceCode: referenceCode ||null,
+          phoneNumber: phoneNumber,
+          createdAt: new Date(),
+          driverCheck: false,
+        });
+        await sendEmailVerification(user);
+        router.push('./verify');
+      }
+      // If signup is successful, navigate to the /(tabs) route
     } catch (error) {
-      console.error('Error submitting driver data:', error);
+      console.error("Signup Error: ", error);
+      // Handle signup error (e.g., email already in use)
+      Alert.alert("Signup Error", "Email is already in use. Please try again.");
     }
+  };
+  const handleLogin = () => {
+    router.push('./login'); // Navigate to the signup page
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Enter Vehicle Information</Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Sign Up for JourneyLink</Text>
 
       <TextInput
-        placeholder="Make"
-        value={make}
-        onChangeText={setMake}
         style={styles.input}
+        placeholder="First Name"
+        value={firstName}
+        onChangeText={setFirstName}
       />
 
       <TextInput
-        placeholder="Model"
-        value={model}
-        onChangeText={setModel}
         style={styles.input}
+        placeholder="Last Name"
+        value={lastName}
+        onChangeText={setLastName}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Phone Number"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        keyboardType="phone-pad"
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="University Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        autoCapitalize="none"
       />
 
       <TextInput
-        placeholder="Year"
-        value={year}
-        onChangeText={setYear}
-        keyboardType="numeric"
         style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
       />
 
       <TextInput
-        placeholder="Number of Seats"
-        value={seats}
-        onChangeText={setSeats}
-        keyboardType="numeric"
         style={styles.input}
+        placeholder="Confirm Password"
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+        secureTextEntry
+        autoCapitalize="none"
       />
 
-      <Text>Upload Registration</Text>
-      <TouchableOpacity style={styles.signupButton} onPress={() => pickImage(setRegistrationImage)}>
-        <Text style={styles.signupButtonText}>Pick Registration Image</Text>
-      </TouchableOpacity>
-      {registrationImage && <Image source={{ uri: registrationImage }} style={{ width: 100, height: 100 }} />}
+      <TextInput
+        style={styles.input}
+        placeholder="Reference Code (Optional)"
+        value={referenceCode}
+        onChangeText={setReferenceCode}
+      />
 
-      <Text>Upload Insurance</Text>
-      <TouchableOpacity style={styles.signupButton} onPress={() => pickImage(setInsuranceImage)}>
-        <Text style={styles.signupButtonText}>Pick Insurance Image</Text>
+      <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
+        <Text style={styles.signupButtonText}>Sign Up</Text>
       </TouchableOpacity>
-      {insuranceImage && <Image source={{ uri: insuranceImage }} style={{ width: 100, height: 100 }} />}
 
-      <Text>Upload Driver's License</Text>
-      <TouchableOpacity style={styles.signupButton} onPress={() => pickImage(setLicenseImage)}>
-        <Text style={styles.signupButtonText}>Pick License Image</Text>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+        <Text style={styles.loginButtonText}>Already have an account? Log In</Text>
       </TouchableOpacity>
-      {licenseImage && <Image source={{ uri: licenseImage }} style={{ width: 100, height: 100 }} />}
-
-      <TouchableOpacity style={styles.signupButton} onPress={handleSubmit}>
-        <Text style={styles.signupButtonText}>Submit</Text>
-      </TouchableOpacity>
-    </ScrollView>
+    </View>
   );
 }
 
-// Add styles for the Driver Form
 const styles = StyleSheet.create({
   container: {
     flex: 1,

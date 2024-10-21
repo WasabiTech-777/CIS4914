@@ -68,7 +68,6 @@ export default function TabLayout() {
             <TabBarIcon name={focused ? 'car' : 'car-outline'} color={color} />
           ),
         }}
-        component={DriverStack} // Use the component prop to specify DriverStack
       />
       <Tabs.Screen
         name="rider"
