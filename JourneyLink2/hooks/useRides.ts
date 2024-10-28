@@ -25,7 +25,7 @@ const useRides = (userId: string | null) => {
         // Fetch upcoming rides
         const upcomingQuery = query(
           collection(db, 'rides'),
-          where('userId', '==', userId),
+          where('driverId', '==', userId),
           where('date', '>=', new Date())
         );
         const upcomingSnapshot = await getDocs(upcomingQuery);
