@@ -3,6 +3,7 @@ import { View, ScrollView, Text, StyleSheet, TouchableOpacity, ActivityIndicator
 import { useAuth } from '../../hooks/useAuth'; // Assuming this hook provides authentication context
 import useRides from '../../hooks/useRides'; // Assuming this hook fetches ride data
 import { Ride } from '../../hooks/useRides'; // Import the Ride interface
+import { router } from 'expo-router';
 
 export default function RiderScreen() {
   const { user } = useAuth(); // Get the user and loading state
@@ -14,7 +15,7 @@ export default function RiderScreen() {
   // Function to handle navigation to the Book Ride page
   const handleBookRide = () => {
     // Navigate to the ride-finding page (adjust this based on your navigation setup)
-    console.log("Navigate to Book Ride page"); // Replace with actual navigation
+    router.push('/booking/findRide');
   };
 
   return (

@@ -10,3 +10,5 @@ export const uploadImageToStorage = async (uri: string, path: string) => {
   
   return getDownloadURL(storageRef); // Return the download URL after uploading
 };
+
+
