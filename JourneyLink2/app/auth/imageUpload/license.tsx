@@ -6,8 +6,10 @@ import { uploadImageToStorage } from './uploadHelper';
 import { db } from '../../../firebase/firebaseConfig'; // Import Firebase Firestore
 import { doc, setDoc, Timestamp } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function LicenseUpload() {
+  const {user} = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
@@ -29,14 +31,9 @@ export default function LicenseUpload() {
     if (image) {
       setUploading(true);
       try {
-        const licenseImageUrl = await uploadImageToStorage(image, `drivers/license_${Date.now()}.jpg`);
-        console.log('License image uploaded:', licenseImageUrl);
-
-        // Get the current authenticated user
-        const auth = getAuth();
-        const user = auth.currentUser;
-
         if (user) {
+          const imageUrl = await uploadImageToStorage(image, 'license', user.uid);
+          console.log('License image uploaded:', imageUrl);
           const driverId = user.uid;
 
           // Submit all data to Firestore
@@ -47,7 +44,7 @@ export default function LicenseUpload() {
             seats: seats,
             registrationImage: registrationImageUrl,
             insuranceImage: insuranceImageUrl,
-            licenseImage: licenseImageUrl,
+            licenseImage: imageUrl,
           });
 
           console.log('Driver data successfully submitted to Firestore');

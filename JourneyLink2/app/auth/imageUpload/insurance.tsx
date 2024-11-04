@@ -3,8 +3,10 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useRouter, useLocalSearchParams} from 'expo-router';
 import { uploadImageToStorage } from './uploadHelper';
+import { useAuth } from '../../../hooks/useAuth';
 
 export default function InsuranceUpload() {
+  const { user } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
@@ -26,14 +28,16 @@ export default function InsuranceUpload() {
     if (image) {
       setUploading(true);
       try {
-        const imageUrl = await uploadImageToStorage(image, `drivers/insurance_${Date.now()}.jpg`);
-        console.log('Insurance image uploaded:', imageUrl);
+        if (user){
+          const imageUrl = await uploadImageToStorage(image, 'insurance', user.uid);
+          console.log('Insurance image uploaded:', imageUrl);
         
         // Navigate to the license page, passing along the image URLs
-        router.push({
-          pathname: '/auth/imageUpload/license',
-          params: { make, model, year, seats, registrationImageUrl, insuranceImageUrl: imageUrl },
-        });
+          router.push({
+            pathname: '/auth/imageUpload/license',
+            params: { make, model, year, seats, registrationImageUrl, insuranceImageUrl: imageUrl },
+          });
+        }
       } catch (error) {
         console.error('Error uploading insurance image:', error);
       } finally {
