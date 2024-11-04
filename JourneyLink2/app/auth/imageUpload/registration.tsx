@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { useAuth } from '../../../hooks/useAuth';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { uploadImageToStorage } from './uploadHelper'; // Helper function for image upload
 
 export default function RegistrationUpload() {
+  const { user } = useAuth();
   const [image, setImage] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const router = useRouter();
@@ -26,14 +28,16 @@ export default function RegistrationUpload() {
     if (image) {
       setUploading(true);
       try {
-        const imageUrl = await uploadImageToStorage(image, `drivers/registration_${Date.now()}.jpg`);
-        console.log('Registration image uploaded:', imageUrl);
+        if (user) {
+          const imageUrl = await uploadImageToStorage(image, 'registration', user.uid);
+          console.log('Registration image uploaded:', imageUrl);
         
         // Navigate to the insurance page, passing along the image URL
-        router.push({
-          pathname: '/auth/imageUpload/insurance',
-          params: { make, model, year, seats, registrationImageUrl: imageUrl },
-        });
+          router.push({
+            pathname: '/auth/imageUpload/insurance',
+            params: { make, model, year, seats, registrationImageUrl: imageUrl },
+          }); 
+        }
       } catch (error) {
         console.error('Error uploading registration image:', error);
       } finally {
