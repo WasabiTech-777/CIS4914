@@ -48,7 +48,9 @@ export default function LicenseUpload() {
           });
 
           console.log('Driver data successfully submitted to Firestore');
-          
+          const userRef = doc(db, 'users', driverId);
+          await setDoc(userRef, { driverCheck: true }, { merge: true });
+          console.log('driverCheck attribute set to true in users collection');
           // Navigate back to driver dashboard
           router.replace('/(tabs)/driver');
         } else {

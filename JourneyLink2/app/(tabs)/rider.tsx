@@ -58,8 +58,11 @@ const RideCard = ({ ride, message }: { ride?: Ride; message?: string }) => {
         <Text style={styles.message}>{message}</Text>
       ) : (
         <>
-          <Text>{ride?.title}</Text>
-          <Text>{ride?.date?.toString()}</Text>
+          <Text>{ride?.address}</Text>
+          <Text>{ride?.createdAt?.toString()}</Text>
+          <Text>{ride?.distance} miles</Text>
+          <Text>{ride?.duration} minutes</Text>
+          <Text>${ride?.price}</Text>
           {/* Add more ride details as needed */}
         </>
       )}

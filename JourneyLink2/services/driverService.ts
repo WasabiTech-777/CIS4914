@@ -26,21 +26,19 @@ export async function getDriverStatus() {
 }
 export async function getUpcomingDrives() {
   try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error('User is not logged in');
-    }
-
-    const ridesCollectionRef = collection(db, 'rides');
-    const q = query(ridesCollectionRef, where('driverID', '==', user.uid));
-    const querySnapshot = await getDocs(q);
-
-    const upcomingDrives = querySnapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-
-    return upcomingDrives;
+    // Simulate hardcoded upcoming drives
+    return [
+      {
+        id: '1',
+        title: 'Drive to Downtown',
+        details: 'Departure: 10:00 AM, Destination: Downtown',
+      },
+      {
+        id: '2',
+        title: 'Airport Pickup',
+        details: 'Departure: 2:00 PM, Destination: Airport',
+      },
+    ];
   } catch (error) {
     console.error('Error fetching upcoming drives:', error);
     return [];
