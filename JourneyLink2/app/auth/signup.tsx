@@ -3,7 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'reac
 import { useRouter } from 'expo-router';
 import { createUserWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';  // Import Firebase auth functions
 import { auth } from '../../firebase/firebaseConfig'; 
-import { collection, addDoc } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { db } from '../../firebase/firebaseConfig';
 
 export default function SignupScreen() {
@@ -65,7 +65,7 @@ export default function SignupScreen() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       if (user){
-        await addDoc(collection(db, 'users'), {
+        await setDoc(doc(db, 'users', user.uid), {
           uid: user.uid,
           firstName: firstName,
           lastName: lastName,

@@ -1,8 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, FlatList, ActivityIndicator, Alert, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
-import { collection, query, where, getDocs } from 'firebase/firestore'; // Query Firestore for user's data
-import { db } from '../../firebase/firebaseConfig';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore'; // Query Firestore for user's data
+import { db, auth } from '../../firebase/firebaseConfig';
+import { signOut } from 'firebase/auth';
+import { useRouter } from 'expo-router';
+import { uploadImageToStorage } from '../auth/imageUpload/uploadHelper';
+import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '../../hooks/useAuth'; // Import the useAuth hook
 
 // Static placeholder data
@@ -21,12 +25,23 @@ const placeholderReviews = [
   { id: '2', user: 'Sara Williams', comment: 'Smooth driving and arrived on time.', rating: 4 },
 ];
 
+
 const AccountScreen = () => {
   const { user } = useAuth(); // Use the useAuth hook to get the authenticated user
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState<string | null>(null);
   const [firestoreUserData, setFirestoreUserData] = useState<any>(null);
+  const router = useRouter();
 
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.push('/auth/login');
+      console.log('User signed out successfully');
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
+  };
   useEffect(() => {
     const fetchUserData = async () => {
       if (user) {
@@ -72,7 +87,41 @@ const AccountScreen = () => {
 
     fetchUserData();
   }, [user]); // Depend on `user` to fetch data only when the user is logged in
+  const handleProfilePicturePress = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permissionResult.granted === false) {
+        Alert.alert('Permission Required', 'You need to grant camera roll permissions to change your profile picture.');
+        return;
+      }
+  const pickerResult = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
 
+  if (!pickerResult.canceled && user) {
+    const { uri } = pickerResult.assets[0];
+    const folder = 'profilepic';
+    const userId = user.uid;
+
+    // Upload image to Firebase Storage and get the download URL
+    const downloadURL = await uploadImageToStorage(uri, folder, userId);
+
+    // Update user's profile picture in Firestore
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { profileImage: downloadURL });
+
+    // Update the local state
+    setFirestoreUserData({ ...firestoreUserData, profileImage: downloadURL });
+    console.log('Profile picture updated successfully');
+  }
+  } catch (error) {
+    console.error('Error updating profile picture:', error);
+    Alert.alert('Error', 'Failed to update profile picture. Please try again.');
+  }
+  };
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -86,10 +135,18 @@ const AccountScreen = () => {
     <ScrollView style={styles.container}>
       {/* Profile Section */}
       <View style={styles.profileSection}>
-    <Image
-      source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }} // Use user's profile image if available
-      style={styles.profilePicture}
-    />
+      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+        <Text style={styles.logoutButtonText}>Logout</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={handleProfilePicturePress} style={styles.profilePictureContainer}>
+        <Image
+          source={{ uri: firestoreUserData?.profileImage || 'https://your-profile-image-url.com' }}
+          style={styles.profilePicture}
+        />
+        {!firestoreUserData?.profileImage && (
+        <Text style={styles.uploadPromptText}>Click here to upload a picture</Text>
+        )}
+    </TouchableOpacity>
     <Text style={styles.name}>
       {firestoreUserData?.firstName && firestoreUserData?.lastName 
         ? `${firestoreUserData.firstName} ${firestoreUserData.lastName}` 
@@ -171,6 +228,39 @@ const AccountScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  profilePictureContainer: {
+    width: 100,
+    height: 100,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 10,
+    position: 'relative',
+  },
+  profilePicture: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 50,
+  },
+  uploadPromptText: {
+    position: 'absolute',
+    textAlign: 'center',
+    color: '#777',
+    fontSize: 12,
+    width: '100%',
+  },
+  logoutButton: {
+    backgroundColor: '#ff6347',
+    height: 75,
+    paddingTop: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+  },
+  logoutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
   container: {
     flex: 1,
     padding: 16,
@@ -178,12 +268,6 @@ const styles = StyleSheet.create({
   profileSection: {
     alignItems: 'center',
     marginBottom: 20,
-  },
-  profilePicture: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 10,
   },
   name: {
     fontSize: 22,
