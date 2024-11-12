@@ -45,7 +45,7 @@ export default function PostRide() {
       // Add the ride ID to the user's upcomingRides array
       const userDocRef = doc(db, 'users', userId);
       await updateDoc(userDocRef, {
-        upcomingRides: arrayUnion(rideRef.id)
+        upcomingDrives: arrayUnion(rideRef.id)
       });
 
       Alert.alert("Success", "Ride posted successfully!");

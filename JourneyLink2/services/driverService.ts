@@ -43,11 +43,11 @@ export async function getUpcomingDrives(userId: string): Promise<Drive[]> {
     const userDocRef = doc(db, "users", userId);
     const userDoc = await getDoc(userDocRef);
     if (userDoc.exists()) {
-      const { upcomingRides } = userDoc.data();
-      if (upcomingRides && upcomingRides.length > 0) {
+      const { upcomingDrives } = userDoc.data();
+      if (upcomingDrives && upcomingDrives.length > 0) {
         // Step 2: Fetch ride documents from the 'rides' collection
         const ridesCollectionRef = collection(db, "rides");
-        const ridesQuery = query(ridesCollectionRef, where("__name__", "in", upcomingRides));
+        const ridesQuery = query(ridesCollectionRef, where("__name__", "in", upcomingDrives));
         const ridesSnapshot = await getDocs(ridesQuery);
 
         // Step 3: Map the documents to the upcomingDrives array
