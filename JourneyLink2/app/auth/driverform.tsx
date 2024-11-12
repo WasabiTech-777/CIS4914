@@ -25,6 +25,7 @@ export default function DriverForm() {
         placeholder="Make"
         value={make}
         onChangeText={setMake}
+        placeholderTextColor="black"
         style={styles.input}
       />
 
@@ -33,6 +34,7 @@ export default function DriverForm() {
         value={model}
         onChangeText={setModel}
         style={styles.input}
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -41,6 +43,7 @@ export default function DriverForm() {
         onChangeText={setYear}
         keyboardType="numeric"
         style={styles.input}
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -49,6 +52,7 @@ export default function DriverForm() {
         onChangeText={setSeats}
         keyboardType="numeric"
         style={styles.input}
+        placeholderTextColor="black"
       />
 
       <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
@@ -62,6 +66,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
+    backgroundColor: 'grey',
     padding: 20,
   },
   title: {
@@ -76,6 +81,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
+    backgroundColor: 'white',
     paddingHorizontal: 10,
   },
   nextButton: {

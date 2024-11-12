@@ -64,6 +64,7 @@ export default function DriverScreen() {
   }
   
   return (
+    <View style={{ flex: 1 }}>
     <View style={styles.container}>
       {isDriverEligible ? (
         <>
@@ -107,6 +108,7 @@ export default function DriverScreen() {
         </>
       )}
     </View>
+    </View>
   );
 }  
 
@@ -125,11 +127,11 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   container: {
-    backgroundColor: 'grey', 
+    flex: 1,
+    backgroundColor: 'grey',
     justifyContent: 'center',
     alignItems: 'center',
-    borderRadius: 8,
-    marginBottom: 20,
+    padding: 20,
   },
   loadingContainer: {
     flex: 1,

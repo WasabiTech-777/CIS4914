@@ -12,6 +12,10 @@ export default function RootLayout() {
         <Stack.Screen name="auth/verify" options={{ headerShown: false }} />
         <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
         <Stack.Screen name="auth/driverform" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/imageUpload/registration" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/imageUpload/insurance" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/imageUpload/vehicle" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/postRide/postride" options={{ headerShown: false }} /> 
         <Stack.Screen name="+not-found" />
       </Stack>
     </ThemeProvider>

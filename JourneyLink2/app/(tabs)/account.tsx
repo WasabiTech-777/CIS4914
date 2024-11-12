@@ -263,6 +263,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    backgroundColor: 'grey',
     padding: 16,
   },
   profileSection: {
@@ -275,7 +276,7 @@ const styles = StyleSheet.create({
   },
   detailsText: {
     fontSize: 16,
-    color: '#777',
+    color: 'black',
     marginTop: 5,
   },
   starContainer: {

@@ -90,6 +90,7 @@ export default function LicenseUpload() {
 const styles = StyleSheet.create({
     container: {
       flex: 1,
+      backgroundColor: 'grey',
       justifyContent: 'center',
       padding: 20,
     },

@@ -71,6 +71,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         value={startAddress}
         onChangeText={setStartAddress}
         style={styles.input}
+        placeholderTextColor="black"
       />
       
       <TextInput
@@ -78,6 +79,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         value={endAddress}
         onChangeText={setEndAddress}
         style={styles.input}
+        placeholderTextColor="black"
       />
       
       <TextInput
@@ -86,6 +88,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         onChangeText={setCostPerRider}
         keyboardType="numeric"
         style={styles.input}
+        placeholderTextColor="black"
       />
       
       <TextInput
@@ -94,18 +97,21 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         onChangeText={setSeatsAvailable}
         keyboardType="numeric"
         style={styles.input}
+        placeholderTextColor="black"
       />
 
       <View style={{ marginVertical: 8 }}>
-        <Button title="Select Departure Date & Time" onPress={() => setShowDatePicker(true)} />
-        {showDatePicker && (
-            <DateTimePicker
-                value={departureDate}
-                mode="datetime"
-                display="default"
-                onChange={onDateChange}
-                {...(Platform.OS === 'android' ? { is24Hour: true } : {})}
-            />
+      <TouchableOpacity style={styles.postButton} onPress={() => setShowDatePicker(true)}>
+        <Text style={styles.buttonText}>Select Departure Date & Time</Text>
+        </TouchableOpacity>
+          {showDatePicker && (
+          <DateTimePicker
+            value={departureDate}
+            mode="datetime"
+            display="default"
+            onChange={onDateChange}
+            {...(Platform.OS === 'android' ? { is24Hour: true } : {})}
+          />
         )}
       </View>
 
@@ -118,6 +124,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
 
 const styles = StyleSheet.create({
   container: {
+    backgroundColor: 'grey',
     flex: 1,
     justifyContent: 'center',
     padding: 20,
@@ -134,6 +141,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 5,
     marginBottom: 10,
+    backgroundColor: 'white',
     paddingHorizontal: 10,
   },
   nextButton: {
@@ -145,6 +153,19 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   nextButtonText: {
+    color: '#fff',
+    fontSize: 18,
+  },
+  postButton: {
+    backgroundColor: '#3498db',
+    borderRadius: 25,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
+    marginBottom: 20,
+    marginTop: 40,
+  },
+  buttonText: {
     color: '#fff',
     fontSize: 18,
   },
