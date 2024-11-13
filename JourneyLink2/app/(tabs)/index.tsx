@@ -1,62 +1,118 @@
-import React from 'react';
-import { View, ScrollView, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, ScrollView, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useAuth } from '../../hooks/useAuth';
-import useRides from '../../hooks/useRides';
-import { Ride } from '../../hooks/useRides'; // Import the Ride interface
+import { getUpcomingRides } from '@/services/riderService';
+import { getDriverStatus, getUpcomingDrives, Drive } from '@/services/driverService';
+import { Timestamp } from 'firebase/firestore';
 
 export default function Home() {
-  const { user } = useAuth(); // Destructure loading state if available
-  const userId = user ? user.uid : "null"; // Safely get the user ID
-  const { upcomingRides, previousRides, suggestedRides } = useRides(userId); // Pass userId to the hook
+  const [isLoading, setIsLoading] = useState(true);
+  const [isDriverEligible, setIsDriverEligible] = useState(false);
+  const [upcomingDrives, setUpcomingDrives] = useState<Drive[]>([]);
+  const [upcomingRides, setUpcomingRides] = useState<Drive[]>([]);
+  const { user } = useAuth();
+
+  useEffect(() => {
+    async function checkDriverEligibility() {
+      if (!user || !user.uid) {
+        console.log("User not available, ending check early");
+        setIsLoading(false);
+        return;
+      }
+  
+      console.log("Checking driver status for user:", user.uid);
+      try {
+        const eligible = await getDriverStatus(user.uid);
+        console.log("Driver eligibility result:", eligible);
+        setIsDriverEligible(eligible);
+  
+        if (eligible) {
+          console.log("Fetching upcoming drives for user:", user.uid);
+          const drives = await getUpcomingDrives(user.uid);
+          console.log("Upcoming drives:", drives);
+          setUpcomingDrives(drives);
+        }
+      } catch (error) {
+        console.error("Error checking driver eligibility or fetching drives:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    async function fetchUpcomingRides() {
+      if (!user || !user.uid) {
+        console.log("User not available, ending ride fetch early");
+        setIsLoading(false);
+        return;
+      }
+      try {
+        console.log("Fetching upcoming rides for user:", user.uid);
+        const rides = await getUpcomingRides(user.uid);
+        console.log("Upcoming rides:", rides);
+        setUpcomingRides(rides);
+      } catch (error) {
+        console.error("Error fetching upcoming rides:", error);
+      }
+    }
+  
+    if (user) {
+      checkDriverEligibility();
+      fetchUpcomingRides();
+    } else {
+      console.log("User not authenticated");
+      setIsLoading(false);
+    }
+  }, [user]);
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
+      {isDriverEligible && (
+        <View style={styles.container}>
+          <Text style={styles.title}>Upcoming Drives</Text>
+          {isLoading ? (
+            <Text>Loading...</Text>
+          ) : upcomingDrives.length > 0 ? (
+            <FlatList
+              data={upcomingDrives}
+              keyExtractor={(item) => item.id}
+              renderItem={({ item }) => <RideCard ride={item} />}
+            />
+          ) : (
+            <RideCard message="No upcoming drives found." />
+          )}
+        </View>
+      )}
+
       <View style={styles.container}>
         <Text style={styles.title}>Upcoming Rides</Text>
-        {upcomingRides.length > 0 ? (
-          upcomingRides.map((ride: Ride) => (
-            <RideCard key={ride.id} ride={ride} />
-          ))
+        {isLoading ? (
+          <Text>Loading...</Text>
+        ) : upcomingRides.length > 0 ? (
+          <FlatList
+            data={upcomingRides}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => <RideCard ride={item} />}
+          />
         ) : (
-          <RideCard message="Upcoming rides will be displayed here..." />
-        )}
-      </View>
-
-      <View style={styles.container}>
-        <Text style={styles.title}>Previous Rides</Text>
-        {previousRides.length > 0 ? (
-          previousRides.map((ride: Ride) => (
-            <RideCard key={ride.id} ride={ride} />
-          ))
-        ) : (
-          <RideCard message="Previous rides will be displayed here..." />
-        )}
-      </View>
-
-      <View style={styles.container}>
-        <Text style={styles.title}>Suggested Rides</Text>
-        {suggestedRides.length > 0 ? (
-          suggestedRides.map((ride: Ride) => (
-            <RideCard key={ride.id} ride={ride} />
-          ))
-        ) : (
-          <RideCard message="Suggested rides will be displayed here..." />
+          <RideCard message="No upcoming rides found. Book a Ride!!" />
         )}
       </View>
     </ScrollView>
   );
 }
 
-const RideCard = ({ ride, message }: { ride?: Ride; message?: string }) => {
+const RideCard = ({ ride, message }: { ride?: Drive; message?: string }) => {
   return (
     <View style={styles.card}>
       {message ? (
         <Text style={styles.message}>{message}</Text>
       ) : (
         <>
-          <Text>{ride?.title}</Text>
-          <Text>{ride?.date?.toString()}</Text>
-          {/* Add more ride details as needed */}
+          <Text style={styles.cardTitle}>{`From: ${ride?.startAddress}`}</Text>
+          <Text style={styles.cardTitle}>{`To: ${ride?.endAddress}`}</Text>
+          <Text style={styles.cardDetail}>{`Cost per rider: $${ride?.costPerRider}`}</Text>
+          <Text style={styles.cardDetail}>{`Departure Date: ${ride?.departureDate instanceof Timestamp ? ride?.departureDate.toDate().toLocaleString() : ride?.departureDate}`}</Text>
+          <Text style={styles.cardDetail}>{`Seats Available: ${ride?.seatsAvailable}`}</Text>
         </>
       )}
     </View>
@@ -101,5 +157,31 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
     color: '#666',
+  },
+  postButton: {
+    backgroundColor: 'orange',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  completeButton: {
+    backgroundColor: 'blue',
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  cardTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  cardDetail: {
+    fontSize: 16,
+    marginBottom: 5,
   },
 });
