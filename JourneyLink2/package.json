@@ -22,7 +22,7 @@
     "@react-native-firebase/storage": "^21.2.0",
     "@react-native-picker/picker": "^2.8.0",
     "@react-navigation/native": "^6.1.18",
-    "@react-navigation/stack": "^6.4.1",
+    "@react-navigation/native-stack": "^6.11.0",
     "@types/firebase": "^2.4.32",
     "expo": "~51.0.28",
     "expo-constants": "~16.0.2",
