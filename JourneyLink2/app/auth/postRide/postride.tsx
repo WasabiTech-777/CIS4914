@@ -2,8 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Button, Alert, TouchableOpacity, StyleSheet, Platform } from 'react-native';
 import { db, auth } from '../../../firebase/firebaseConfig'; // Adjust import based on your Firebase config file location
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import { addDoc, collection, Timestamp, updateDoc, doc, arrayUnion } from 'firebase/firestore';
 import { router } from 'expo-router';
+import 'react-native-get-random-values';
+import { GOOGLE_KEY } from '@/constants/globalConstants';
 
 export default function PostRide() {
   const [startAddress, setStartAddress] = useState('');
@@ -13,6 +16,7 @@ export default function PostRide() {
   const [seatsAvailable, setSeatsAvailable] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const userId = auth.currentUser?.uid;
+  const GOOGLE_API_KEY = GOOGLE_KEY;
 
   const handlePostRide = async () => {
     if (!userId) {
@@ -66,20 +70,32 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
     <View style={styles.container}>
       <Text style={styles.title}>Post a Ride</Text>
       
-      <TextInput
+      <GooglePlacesAutocomplete
         placeholder="Start Address"
-        value={startAddress}
-        onChangeText={setStartAddress}
-        style={styles.input}
-        placeholderTextColor="black"
+        onPress={(data, details = null) => {
+          setStartAddress(data.description);
+        }}
+        query={{
+          key: GOOGLE_API_KEY,
+          language: 'en',
+        }}
+        styles={{
+          textInput: styles.input,
+        }}
       />
-      
-      <TextInput
+
+      <GooglePlacesAutocomplete
         placeholder="End Address"
-        value={endAddress}
-        onChangeText={setEndAddress}
-        style={styles.input}
-        placeholderTextColor="black"
+        onPress={(data, details = null) => {
+          setEndAddress(data.description);
+        }}
+        query={{
+          key: GOOGLE_API_KEY,
+          language: 'en',
+        }}
+        styles={{
+          textInput: styles.input,
+        }}
       />
       
       <TextInput
