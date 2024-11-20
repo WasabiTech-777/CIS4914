@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Button, Text, ScrollView, StyleSheet, ActivityIndicator, Alert } from 'react-native';
-import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 import { GooglePlacesAutocomplete } from 'react-native-google-places-autocomplete';
 import useRides from '../../hooks/useRides'; // Import the useRides hook
 import { Ride } from '../../hooks/useRides'; // Import the Ride interface
@@ -8,27 +8,50 @@ import { Ride } from '../../hooks/useRides'; // Import the Ride interface
 export default function FindRidePage() {
   const [startingPoint, setStartingPoint] = useState('');
   const [destination, setDestination] = useState('');
+  const [distance, setDistance] = useState('');
+  const [duration, setDuration] = useState('');
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
 
-  // Use the useRides hook to fetch rides
-  const { upcomingRides, loading, error } = useRides(null); // Pass null or appropriate userId if needed
+  const { upcomingRides, loading, error } = useRides(null);
 
-  useEffect(() => {
-    if (showPicker) {
-      Alert.alert('Please select a time at least one hour in the future.');
+  const calculateDistance = async () => {
+    if (!startingPoint || !destination) {
+      Alert.alert('Missing Information', 'Please enter both a starting point and destination.');
+      return;
     }
-  }, [showPicker]);
 
-  const handleDateChange = (event: DateTimePickerEvent, date?: Date) => {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/distancematrix/json?units=metric&origins=${encodeURIComponent(
+          startingPoint
+        )}&destinations=${encodeURIComponent(destination)}&key=AIzaSyAglgYN2wQodQMJIESUf12mOX6xAZLPSl0`
+      );
+      const data = await response.json();
+      if (data.rows[0].elements[0].status === 'OK') {
+        setDistance(data.rows[0].elements[0].distance.text);
+        setDuration(data.rows[0].elements[0].duration.text);
+      } else {
+        Alert.alert('Error', 'Unable to calculate distance. Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', 'Failed to fetch distance data. Check your internet connection.');
+    }
+  };
+
+  const handleDateChange = (event: any, date?: Date) => {
     const currentDate = date || selectedDate;
     setShowPicker(false);
-    if (currentDate >= new Date(Date.now() + 60 * 60 * 1000)) { // At least 1 hour in the future
+  
+    if (currentDate >= new Date(Date.now() + 60 * 60 * 1000)) {
       setSelectedDate(currentDate);
     } else {
       Alert.alert('Invalid Date', 'Please select a time at least one hour in the future.');
     }
   };
+  
+  
 
   const handleSearch = () => {
     if (!startingPoint || !destination) {
@@ -36,13 +59,20 @@ export default function FindRidePage() {
       return [];
     }
 
-    // Filter rides based on user input
-    const filteredRides = upcomingRides.filter((ride: Ride) => 
-      startingPoint === startingPoint &&
-      destination === destination
+    calculateDistance();
+
+    const filteredRides = upcomingRides.filter(
+      (ride: Ride) => ride.startLocation === startingPoint && ride.endLocation === destination
     );
 
     return filteredRides;
+  };
+
+  const handleBookRide = () => {
+    Alert.alert(
+      'Booking Confirmation',
+      `Your ride from ${startingPoint} to ${destination} has been booked for ${selectedDate.toLocaleString()}. Distance: ${distance}, Duration: ${duration}`
+    );
   };
 
   const filteredRides = handleSearch();
@@ -52,11 +82,9 @@ export default function FindRidePage() {
       <Text style={styles.label}>Starting Point</Text>
       <GooglePlacesAutocomplete
         placeholder="Enter starting point"
-        onPress={(data, details = null) => {
-          setStartingPoint(data.description);
-        }}
+        onPress={(data, details = null) => setStartingPoint(data.description)}
         query={{
-          key: 'YOUR_GOOGLE_API_KEY',
+          key: 'AIzaSyAglgYN2wQodQMJIESUf12mOX6xAZLPSl0',
           language: 'en',
         }}
         styles={{
@@ -67,17 +95,23 @@ export default function FindRidePage() {
       <Text style={styles.label}>Destination</Text>
       <GooglePlacesAutocomplete
         placeholder="Enter destination"
-        onPress={(data, details = null) => {
-          setDestination(data.description);
-        }}
+        onPress={(data, details = null) => setDestination(data.description)}
         query={{
-          key: 'YOUR_GOOGLE_API_KEY',
+          key: 'AIzaSyAglgYN2wQodQMJIESUf12mOX6xAZLPSl0',
           language: 'en',
         }}
         styles={{
           textInput: styles.input,
         }}
       />
+
+      <Button title="Calculate Distance" onPress={calculateDistance} />
+      {distance && duration ? (
+        <View style={styles.distanceInfo}>
+          <Text>Distance: {distance}</Text>
+          <Text>Duration: {duration}</Text>
+        </View>
+      ) : null}
 
       <Button title="Select Date & Time" onPress={() => setShowPicker(true)} />
       {showPicker && (
@@ -90,6 +124,7 @@ export default function FindRidePage() {
       )}
 
       <Button title="Search Rides" onPress={handleSearch} />
+      <Button title="Book Ride" onPress={handleBookRide} />
 
       {loading && <ActivityIndicator size="large" color="#0000ff" />}
       {error && <Text style={styles.error}>{error}</Text>}
@@ -143,6 +178,12 @@ const styles = StyleSheet.create({
     padding: 16,
     borderRadius: 8,
     marginBottom: 12,
+  },
+  distanceInfo: {
+    marginTop: 16,
+    padding: 16,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
   },
   noResults: {
     marginVertical: 16,

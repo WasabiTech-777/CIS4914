@@ -6,7 +6,7 @@ import { getAnalytics, isSupported } from 'firebase/analytics';
 
 // Your Firebase configuration from Firebase console
 const firebaseConfig = {
-  apiKey: "AIzaSyC_tztX19mBA_kyHHGitsPex2eh856UruY",
+  apiKey: "AIzaSyAglgYN2wQodQMJIESUf12mOX6xAZLPSl0",
   authDomain: "journeylink-60cac.firebaseapp.com",
   projectId: "journeylink-60cac",
   storageBucket: "journeylink-60cac.appspot.com",

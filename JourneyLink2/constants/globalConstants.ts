@@ -1,4 +1,4 @@
 // globalConstants.ts
 
-export const GOOGLE_KEY = 'AIzaSyC_tztX19mBA_kyHHGitsPex2eh856UruY';
+export const GOOGLE_KEY = 'AIzaSyAglgYN2wQodQMJIESUf12mOX6xAZLPSl0';
 export const STRIPE_TEST = 'pk_test_51QL6pBBCje0h0SbePHoHFOMq14urwnHWNQOIwctkguyhMYrHw5gBCbPyd4A82cg29KXAiMHKOzUyFbkvaftp1ONO00YIGsrx5a';
