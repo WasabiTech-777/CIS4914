@@ -69,7 +69,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Post a Ride</Text>
-      
+      <Text style={styles.label}>Enter your starting address:</Text>
       <GooglePlacesAutocomplete
         placeholder="Start Address"
         onPress={(data, details = null) => {
@@ -81,9 +81,10 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         }}
         styles={{
           textInput: styles.input,
+          placeholderTextColor: 'black',
         }}
       />
-
+      <Text style={styles.label}>Enter your destination address:</Text>
       <GooglePlacesAutocomplete
         placeholder="End Address"
         onPress={(data, details = null) => {
@@ -95,6 +96,7 @@ const onDateChange = (event: any, selectedDate: Date | undefined) => {
         }}
         styles={{
           textInput: styles.input,
+          placeholderTextColor: 'black',
         }}
       />
       
@@ -144,6 +146,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     padding: 20,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: 'black',
   },
   title: {
     fontSize: 24,

@@ -98,6 +98,7 @@ export default function SignupScreen() {
         placeholder="First Name"
         value={firstName}
         onChangeText={setFirstName}
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -105,6 +106,7 @@ export default function SignupScreen() {
         placeholder="Last Name"
         value={lastName}
         onChangeText={setLastName}
+        placeholderTextColor="black"
       />
       <TextInput
         style={styles.input}
@@ -113,6 +115,7 @@ export default function SignupScreen() {
         onChangeText={setPhoneNumber}
         keyboardType="phone-pad"
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
       <TextInput
         style={styles.input}
@@ -121,6 +124,7 @@ export default function SignupScreen() {
         onChangeText={setEmail}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -130,6 +134,7 @@ export default function SignupScreen() {
         onChangeText={setPassword}
         secureTextEntry
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -139,6 +144,7 @@ export default function SignupScreen() {
         onChangeText={setConfirmPassword}
         secureTextEntry
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -146,6 +152,7 @@ export default function SignupScreen() {
         placeholder="Reference Code (Optional)"
         value={referenceCode}
         onChangeText={setReferenceCode}
+        placeholderTextColor="black"
       />
 
       <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>

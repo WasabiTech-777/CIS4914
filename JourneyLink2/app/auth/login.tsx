@@ -48,6 +48,7 @@ export default function LoginScreen() {
         onChangeText={(text) => setValue({ ...value, email: text })}
         keyboardType="email-address"
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
 
       <TextInput
@@ -57,6 +58,7 @@ export default function LoginScreen() {
         onChangeText={(text) => setValue({ ...value, password: text })}
         secureTextEntry
         autoCapitalize="none"
+        placeholderTextColor="black"
       />
 
       {/* Custom Login Button */}
